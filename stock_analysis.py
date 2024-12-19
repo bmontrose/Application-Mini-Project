@@ -11,6 +11,9 @@ def analyze_breakouts(ticker, start_date, end_date, volume_threshold, price_thre
     # Get the data
     df = get_stock_data(ticker, start_date, end_date)
     
+    if len(df) < 20:  # Need at least 20 days for moving average
+        return pd.DataFrame()
+    
     # Calculate 20-day average volume
     df['Volume_MA20'] = df['Volume'].rolling(window=20).mean()
     
@@ -34,14 +37,14 @@ def analyze_breakouts(ticker, start_date, end_date, volume_threshold, price_thre
             holding_return = ((exit_price - entry_price) / entry_price) * 100
             
             results.append({
-                'Date': day,
-                'Entry_Price': entry_price,
-                'Exit_Price': exit_price,
-                'Return': holding_return,
-                'Volume': df.loc[day, 'Volume'],
-                'Avg_Volume': df.loc[day, 'Volume_MA20'],
-                'Volume_Increase': (df.loc[day, 'Volume'] / df.loc[day, 'Volume_MA20'] - 1) * 100,
-                'Daily_Price_Change': df.loc[day, 'Daily_Return']
+                'Date': day.strftime('%Y-%m-%d'),
+                'Entry_Price': round(entry_price, 2),
+                'Exit_Price': round(exit_price, 2),
+                'Return': round(holding_return, 2),
+                'Volume': int(df.loc[day, 'Volume']),
+                'Avg_Volume': int(df.loc[day, 'Volume_MA20']),
+                'Volume_Increase': round((df.loc[day, 'Volume'] / df.loc[day, 'Volume_MA20'] - 1) * 100, 2),
+                'Daily_Price_Change': round(df.loc[day, 'Daily_Return'], 2)
             })
     
     return pd.DataFrame(results)
